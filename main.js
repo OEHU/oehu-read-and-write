@@ -10,7 +10,7 @@ let config = require('./config');
 const seed = bip39.mnemonicToSeed(config.bigchain.phrase).slice(0, 32);
 const keypair = new BigchainDriver.Ed25519Keypair(seed);
 
-const p1Reader = new P1Reader({debug: false, emulator: true});
+const p1Reader = new P1Reader({debug: true, emulator: true});
 const bigchainUploader = new BigchainUploader({network: config.bigchain.network, keypair: keypair});
 
 let lastReading = 0;
@@ -53,27 +53,82 @@ async function uploadToBigchain(reading) {
     orm.define("devices", "https://schema.org/v1/myModel");
 
     try {
-        const updatedAsset = await orm.models.devices.create({
-            keypair: keypair,
-            data: {
-                "deviceType": "OEHU",
-                "location": {
-                    "type": "Point",
-                    "coordinates": [
-                        "1",
-                        "1"
-                    ]
-                },
-                "locationAccuracy": "1",
-                "householdType": "Factory",
-                "occupants": "2",
-                ...reading
-            },
-        });
-        console.log(updatedAsset);
+        asset = await orm.models.devices.create(config.bigchain.deviceID);
+        console.log(asset);
     } catch (e) {
         console.log(e);
     }
+
+    // try {
+    //     let appendedAsset = await orm.devices.append({keypair: keypair, toPublicKey: keypair.publicKey, data: {
+    //             "deviceType": "OEHU",
+    //             "location": {
+    //                 "type": "Point",
+    //                 "coordinates": [
+    //                     "1",
+    //                     "1"
+    //                 ]
+    //             },
+    //             "locationAccuracy": "1",
+    //             "householdType": "Factory",
+    //             "occupants": "2",
+    //             ...reading
+    //         }
+    //     });
+    //     console.log(appendedAsset);
+    // } catch (e) {
+    //     console.log(e);
+    // }
+
+
+
+
+    // const api = config.bigchain.network + 'transactions/f4afc17b6a9ff1ad12c52b5ca8737f4f06094e3b34ad4dee7e4f7f0ae6fa4b54';
+    // await axios.get(api)
+    // .then(function (response) {
+    //     let asset = response.data;
+    //     asset = orm.models.devices(asset);
+    //     let object = new orm.OrmObject('myModel', 'https://schema.org/v1/myModel', )
+    //     console.log(asset);
+    // })
+    // .catch(function (error) {
+    //     console.log(error);
+    // });
+
+
+
+    // try {
+    //     asset = await orm.models.devices.retrieve();
+    //     console.log(asset);
+    // } catch (e) {
+    //     console.log(e);
+    // }
+
+
+
+
+    // try {
+    //     const updatedAsset = await orm.models.devices.create({
+    //         keypair: keypair,
+    //         data: {
+    //             "deviceType": "OEHU",
+    //             "location": {
+    //                 "type": "Point",
+    //                 "coordinates": [
+    //                     "1",
+    //                     "1"
+    //                 ]
+    //             },
+    //             "locationAccuracy": "1",
+    //             "householdType": "Factory",
+    //             "occupants": "2",
+    //             ...reading
+    //         },
+    //     });
+    //     console.log(updatedAsset);
+    // } catch (e) {
+    //     console.log(e);
+    // }
 
     // const api = config.bigchain.network + '';
     // axios.get(api)

@@ -23,6 +23,6 @@
   "bigchain": {
     "network": "http://188.166.15.225:9984/api/v1/",
     "phrase": "penalty shine inner milk early answer ceiling twin spot blush width brick",
-    "MaybeDeletedeviceID": "id:3b959424:devices:beda4fb7-c2f9-4cb3-a479-4c8038535c74"
+    "deviceID": "id:3b959424:devices:beda4fb7-c2f9-4cb3-a479-4c8038535c74"
   }
 }
