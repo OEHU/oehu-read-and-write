@@ -67,7 +67,7 @@ function _setupSerialConnection() {
     let received = '';
 
     sp.on('open', () => {
-        debug.log('Serial connection established');
+        console.log('Serial connection established');
 
         sp.on('data', (data) => {
             received += data.toString();
@@ -110,7 +110,7 @@ function _setupSerialConnection() {
             _tryNextSerialPort();
         } else {
             // Only emit errors after we have established a connection with the Smart Meter
-            debug.log('Error emitted: ' + error);
+            console.log('Error emitted: ' + error);
 
             constructor.emit('error', error);
         }
