@@ -30,26 +30,29 @@ p1Reader.on('connected', portConfig => {
 });
 
 p1Reader.on('reading', data => {
-    console.log('Reading from smart meter');
+    const time = new Date().getTime();
+    if (time > lastReading + (30 * 1000)) {
+        console.log('Reading from smart meter');
 
-    let reading = {
-        lastUpdate: Date.now(),
-        electricityReceived: {
-            total: data.electricity.received.tariff1.reading + data.electricity.received.tariff2.reading,
-            tariff1: data.electricity.received.tariff1.reading,
-            tariff2: data.electricity.received.tariff2.reading
-        },
-        electricityDelivered: {
-            total: data.electricity.delivered.tariff1.reading + data.electricity.delivered.tariff2.reading,
-            tariff1: data.electricity.delivered.tariff1.reading,
-            tariff2: data.electricity.delivered.tariff2.reading
-        },
-        gasReceived: data.gas.reading
-    };
+        let reading = {
+            lastUpdate: Date.now(),
+            electricityReceived: {
+                total: data.electricity.received.tariff1.reading + data.electricity.received.tariff2.reading,
+                tariff1: data.electricity.received.tariff1.reading,
+                tariff2: data.electricity.received.tariff2.reading
+            },
+            electricityDelivered: {
+                total: data.electricity.delivered.tariff1.reading + data.electricity.delivered.tariff2.reading,
+                tariff1: data.electricity.delivered.tariff1.reading,
+                tariff2: data.electricity.delivered.tariff2.reading
+            },
+            gasReceived: data.gas.reading
+        };
 
-    console.log(reading);
-
-    uploadReadingToBigchain(reading);
+        console.log(reading);
+        uploadReadingToBigchain(reading);
+        lastReading = time;
+    }
 });
 
 p1Reader.on('error', error => {
@@ -65,8 +68,5 @@ process.on('uncaughtException', error => {
 });
 
 function uploadReadingToBigchain (reading) {
-    if (lastReading)
 
-
-    let lastReading = reading;
 }
