@@ -19,6 +19,7 @@
   "dependencies": {
     "moment": "^2.24.0",
     "p1-reader": "https://github.com/OEHU/node-p1-reader.git",
+    "serialport": "^7.1.4",
     "veh-bigchaindb-uploader": "https://github.com/OEHU/veh-bigchaindb-uploader.git"
   }
 }

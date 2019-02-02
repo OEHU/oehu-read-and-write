@@ -1,0 +1,26 @@
+{
+  "serialPort": [
+    {
+      "baudRate": 115200,
+      "parity": "none",
+      "dataBits": 8,
+      "stopBits": 1
+    },
+    {
+      "baudRate": 115200,
+      "parity": "even",
+      "dataBits": 7,
+      "stopBits": 1
+    }
+  ],
+  "startCharacter": "/",
+  "stopCharacter": "!",
+  "connectionSetupTimeout": 30000,
+  "debugRawDataFile": "debug-data-raw.log",
+  "debugParsedDataFile": "debug-data-parsed.log",
+  "emulatorIntervalInSeconds": 10,
+  "emulatorIntervalGasInSeconds": 3600,
+  "bigchain": {
+    "network": "http://188.166.15.225:9984/api/v1/"
+  }
+}
