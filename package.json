@@ -17,7 +17,8 @@
   },
   "homepage": "https://github.com/OEHU/oehu-read-and-write#readme",
   "dependencies": {
-    "p1-reader": "^1.5.1",
+    "moment": "^2.24.0",
+    "p1-reader": "https://github.com/OEHU/node-p1-reader.git",
     "veh-bigchaindb-uploader": "https://github.com/OEHU/veh-bigchaindb-uploader.git"
   }
 }

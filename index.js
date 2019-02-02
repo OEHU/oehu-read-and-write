@@ -3,6 +3,7 @@ const P1Reader = require('p1-reader');
 const BigchainUploader = require('veh-bigchaindb-uploader');
 
 let config = {};
+let lastReading = 0;
 
 config.debug = true;
 // config.emulator = true;
@@ -64,5 +65,8 @@ process.on('uncaughtException', error => {
 });
 
 function uploadReadingToBigchain (reading) {
+    if (lastReading)
 
+
+    let lastReading = reading;
 }
