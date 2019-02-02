@@ -17,6 +17,11 @@
   },
   "homepage": "https://github.com/OEHU/oehu-read-and-write#readme",
   "dependencies": {
-    "serialport": "^7.1.4"
+    "axios": "^0.18.0",
+    "bigchaindb-driver": "^4.1.0",
+    "bigchaindb-orm": "^3.0.3",
+    "bip39": "^2.5.0",
+    "p1-reader": "https://github.com/OEHU/node-p1-reader.git",
+    "veh-bigchaindb-uploader": "git+https://github.com/OEHU/veh-bigchaindb-uploader.git"
   }
 }
