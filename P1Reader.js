@@ -37,6 +37,8 @@ function P1Reader(options) {
     });
 }
 
+module.exports = P1Reader;
+
 /**
  * Setup serial port connection
  */
