@@ -1,5 +1,4 @@
 const P1Reader = require('p1-reader');
-const BigchainUploader = require('veh-bigchaindb-uploader').default;
 const BigchainOrm = require('bigchaindb-orm').default;
 const OrmObject = require('bigchaindb-orm/dist/node/ormobject').default;
 const Connection = require('bigchaindb-orm/dist/node/connection').default;
@@ -13,7 +12,6 @@ const seed = bip39.mnemonicToSeed(config.bigchain.phrase).slice(0, 32);
 const keypair = new BigchainDriver.Ed25519Keypair(seed);
 
 const p1Reader = new P1Reader({debug: true, emulator: true});
-const bigchainUploader = new BigchainUploader({network: config.bigchain.network, keypair: keypair});
 
 let lastReading = 0;
 

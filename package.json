@@ -21,7 +21,6 @@
     "bigchaindb-driver": "^4.1.0",
     "bigchaindb-orm": "^3.0.3",
     "bip39": "^2.5.0",
-    "p1-reader": "https://github.com/OEHU/node-p1-reader.git",
-    "veh-bigchaindb-uploader": "git+https://github.com/OEHU/veh-bigchaindb-uploader.git"
+    "p1-reader": "https://github.com/OEHU/node-p1-reader.git"
   }
 }
