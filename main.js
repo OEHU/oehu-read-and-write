@@ -60,39 +60,46 @@ class OehuReadAndWrite {
 
     async uploadToBigchain(reading) {
 
+        //Create connection
         let connection = new Connection(this.network, {
             app_id: this.appId,
             app_key: this.appKey
         });
 
-        let transactions = await axios.get(this.transactionsApi)
+        //Get 'CREATE' transaction
+        let assetCreateTransaction;
+        try {
+            assetCreateTransaction = await connection.listTransactions("f4afc17b6a9ff1ad12c52b5ca8737f4f06094e3b34ad4dee7e4f7f0ae6fa4b54", 'CREATE');
+        } catch (e) {
+            console.log(e);
+        }
+
+        //Get latest transaction of asset
+        let tx = await axios.get(this.transactionsApi)
         .then(function (response) {
-            //missing: asset.data.id === deviceId
-            //missing: tx.outputs[outputIndex];
-            //We need an api endpoint which responds with raw transaction data (outputs, inputs, etc)
-            return response.data;
+            return response.data[0];
         })
         .catch(function (error) {
             console.log(error);
         });
 
-        let asset = new OrmObject(
-            'devices',
-            'https://schema.org/v1/myModel',
-            connection,
-            this.appId,
-            transactions // missing: transactions[0].asset.data.id (bigchaindb-orm/src/ormobject.js)
-        );
-        console.log(asset);
-
+        //Create transfer transaction, sign and send to Bigchain
+        this.createTransferTransaction(connection, assetCreateTransaction[0].metadata, reading);
+    }
+    async createTransferTransaction(connection, oldMetadata, reading) {
+        let newAssetTransaction;
         try {
-            let appendedAsset = await asset.append({
-                keypair: this.keypair, toPublicKey: this.keypair.publicKey, data: {
-                    // ...transactions[0].metadata?,
+            newAssetTransaction = await connection.transferTransaction(
+                tx,
+                this.keypair.publicKey,
+                this.keypair.privateKey,
+                this.keypair.publicKey,
+                {
+                    ...oldMetadata,
                     ...reading
                 }
-            });
-            console.log(appendedAsset);
+            );
+            console.log(newAssetTransaction);
         } catch (e) {
             console.log(e);
         }
