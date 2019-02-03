@@ -17,6 +17,8 @@ class OehuReadAndWrite {
         this.debug = opts.debug;
         this.emulator = opts.emulator;
 
+        this.transactionsApi = 'https://api.oehu.org/transactions?deviceId=' + this.deviceId;
+
         //fucking bug in bigchainDriver: https://github.com/bigchaindb/js-bigchaindb-driver/issues/268
         this.seed = bip39.mnemonicToSeed(this.phrase).slice(0, 32);
         this.keypair = new BigchainDriver.Ed25519Keypair(this.seed);
@@ -57,20 +59,32 @@ class OehuReadAndWrite {
 
     async uploadToBigchain(reading) {
 
-        //call transactionHistory with axios
-
         let connection = new Connection(this.network, {
             app_id: this.appId,
             app_key: this.appKey
         });
+
+        let transactions = await axios.get(this.transactionsApi)
+        .then(function (response) {
+            //missing: asset.data.id === deviceId
+            //missing: tx.outputs[outputIndex];
+            //We need an api endpoint which responds with raw transaction data (outputs, inputs, etc)
+            return response.data;
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+
+        console.log(transactions);
+
         let asset = new OrmObject(
             'devices',
             'https://schema.org/v1/myModel',
             connection,
             this.appId,
-            [{asset: {data: {id: this.deviceId}}}] //transactionHistory
+            [{asset: {data: {id: this.deviceId}}}] //missing: transactionHistory
         );
-        // console.log(asset);
+        console.log(asset);
 
         try {
             let appendedAsset = await asset.append({
