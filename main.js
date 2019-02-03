@@ -17,6 +17,8 @@ class OehuReadAndWrite {
         this.debug = opts.debug;
         this.emulator = opts.emulator;
 
+        this.connection = 0;
+
         this.transactionsApi = 'https://api.oehu.org/transactions?raw=true&deviceId=' + this.deviceId;
 
         // bug in bigchainDriver: https://github.com/bigchaindb/js-bigchaindb-driver/issues/268. Needs to be looked
@@ -84,9 +86,9 @@ class OehuReadAndWrite {
         });
 
         //Create transfer transaction, sign and send to Bigchain
-        this.createTransferTransaction(connection, assetCreateTransaction[0].metadata, reading);
+        this.createTransferTransaction(connection, tx, reading);
     }
-    async createTransferTransaction(connection, oldMetadata, reading) {
+    async createTransferTransaction(connection, tx, reading) {
         let newAssetTransaction;
         try {
             newAssetTransaction = await connection.transferTransaction(
@@ -94,15 +96,19 @@ class OehuReadAndWrite {
                 this.keypair.publicKey,
                 this.keypair.privateKey,
                 this.keypair.publicKey,
-                {
-                    ...oldMetadata,
-                    ...reading
-                }
+                this.merge_options(tx.metadata.metadata, reading)
             );
             console.log(newAssetTransaction);
         } catch (e) {
             console.log(e);
         }
+    }
+
+    merge_options(obj1, obj2) {
+        let obj3 = {};
+        for (let attrname in obj1) { obj3[attrname] = obj1[attrname]; }
+        for (let attrname in obj2) { obj3[attrname] = obj2[attrname]; }
+        return obj3;
     }
 }
 
