@@ -17,9 +17,10 @@ class OehuReadAndWrite {
         this.debug = opts.debug;
         this.emulator = opts.emulator;
 
-        this.transactionsApi = 'https://api.oehu.org/transactions?deviceId=' + this.deviceId;
+        this.transactionsApi = 'https://api.oehu.org/transactions?raw=true&deviceId=' + this.deviceId;
 
-        //fucking bug in bigchainDriver: https://github.com/bigchaindb/js-bigchaindb-driver/issues/268
+        // bug in bigchainDriver: https://github.com/bigchaindb/js-bigchaindb-driver/issues/268. Needs to be looked
+        // at later. ATM make a change to a node-modules file. See link above.
         this.seed = bip39.mnemonicToSeed(this.phrase).slice(0, 32);
         this.keypair = new BigchainDriver.Ed25519Keypair(this.seed);
         this.lastReading = 0;
@@ -75,21 +76,19 @@ class OehuReadAndWrite {
             console.log(error);
         });
 
-        console.log(transactions);
-
         let asset = new OrmObject(
             'devices',
             'https://schema.org/v1/myModel',
             connection,
             this.appId,
-            [{asset: {data: {id: this.deviceId}}}] //missing: transactionHistory
+            transactions // missing: transactions[0].asset.data.id (bigchaindb-orm/src/ormobject.js)
         );
         console.log(asset);
 
         try {
             let appendedAsset = await asset.append({
                 keypair: this.keypair, toPublicKey: this.keypair.publicKey, data: {
-                    //...transactionHistory[0].data?
+                    // ...transactions[0].metadata?,
                     ...reading
                 }
             });
