@@ -5,71 +5,93 @@ const Connection = require('bigchaindb-orm/dist/node/connection').default;
 const BigchainDriver = require('bigchaindb-driver');
 const bip39 = require('bip39');
 const axios = require('axios');
-let config = require('./config');
 
-//fucking bug in bigchainDriver: https://github.com/bigchaindb/js-bigchaindb-driver/issues/268
-const seed = bip39.mnemonicToSeed(config.bigchain.phrase).slice(0, 32);
-const keypair = new BigchainDriver.Ed25519Keypair(seed);
+class OehuReadAndWrite {
 
-const p1Reader = new P1Reader({debug: true, emulator: true});
+    constructor(opts) {
+        this.network = opts.network;
+        this.deviceId = opts.deviceId;
+        this.phrase = opts.phrase;
+        this.appId = opts.appId;
+        this.appKey = opts.appKey;
+        this.debug = opts.debug;
+        this.emulator = opts.emulator;
 
-let lastReading = 0;
+        //fucking bug in bigchainDriver: https://github.com/bigchaindb/js-bigchaindb-driver/issues/268
+        this.seed = bip39.mnemonicToSeed(this.phrase).slice(0, 32);
+        this.keypair = new BigchainDriver.Ed25519Keypair(this.seed);
+        this.lastReading = 0;
 
-
-p1Reader.on('reading', async function (data) {
-    if (Date.now() - lastReading > 10000) { //every 10 seconds
-        console.log('Reading and uploading');
-        const reading = {
-            lastUpdate: Date.now(),
-            electricityReceived: {
-                total: data.electricity.received.tariff1.reading + data.electricity.received.tariff2.reading,
-                tariff1: data.electricity.received.tariff1.reading,
-                tariff2: data.electricity.received.tariff2.reading
-            },
-            electricityDelivered: {
-                total: data.electricity.delivered.tariff1.reading + data.electricity.delivered.tariff2.reading,
-                tariff1: data.electricity.delivered.tariff1.reading,
-                tariff2: data.electricity.delivered.tariff2.reading
-            },
-            gasReceived: data.gas.reading
-        };
-
-        console.log(reading);
-        let result = uploadToBigchain(reading);
-        lastReading = Date.now();
+        this.p1Reader = new P1Reader({debug: this.debug, emulator: this.emulator});
+        this.p1Reader.on('reading', (data) => this.p1OnRead(data));
+        this.p1Reader.on('error', (err) => this.p1OnError(err));
     }
-});
 
-p1Reader.on('error', function (err) {
-    console.log('Error while reading: ' + err);
-});
+    async p1OnRead(data) {
+        if (Date.now() - this.lastReading > 10000) { //every 10 seconds
+            console.log('Reading and uploading');
+            const reading = {
+                lastUpdate: Date.now(),
+                electricityReceived: {
+                    total: data.electricity.received.tariff1.reading + data.electricity.received.tariff2.reading,
+                    tariff1: data.electricity.received.tariff1.reading,
+                    tariff2: data.electricity.received.tariff2.reading
+                },
+                electricityDelivered: {
+                    total: data.electricity.delivered.tariff1.reading + data.electricity.delivered.tariff2.reading,
+                    tariff1: data.electricity.delivered.tariff1.reading,
+                    tariff2: data.electricity.delivered.tariff2.reading
+                },
+                gasReceived: data.gas.reading
+            };
 
-async function uploadToBigchain(reading) {
+            console.log(reading);
+            let result = this.uploadToBigchain(reading);
+            this.lastReading = Date.now();
+        }
+    }
 
-    //call transactionHistory with axios
+    p1OnError(err) {
+        console.log('Error while reading: ' + err);
+    }
 
-    let connection = new Connection(config.bigchain.network, {
-        app_id: config.bigchain.appID,
-        app_key: config.bigchain.appKey
-    });
-    let asset = new OrmObject(
-        'devices',
-        'https://schema.org/v1/myModel',
-        connection,
-        config.bigchain.appID,
-        [{asset: {data: {id: config.bigchain.deviceID}}}] //transactionHistory
-    );
-    // console.log(asset);
+    async uploadToBigchain(reading) {
 
-    try {
-        let appendedAsset = await asset.append({
-            keypair: keypair, toPublicKey: keypair.publicKey, data: {
-                //...transactionHistory[0].data?
-                ...reading
-            }
+        //call transactionHistory with axios
+
+        let connection = new Connection(this.network, {
+            app_id: this.appId,
+            app_key: this.appKey
         });
-        console.log(appendedAsset);
-    } catch (e) {
-        console.log(e);
+        let asset = new OrmObject(
+            'devices',
+            'https://schema.org/v1/myModel',
+            connection,
+            this.appId,
+            [{asset: {data: {id: this.deviceId}}}] //transactionHistory
+        );
+        // console.log(asset);
+
+        try {
+            let appendedAsset = await asset.append({
+                keypair: this.keypair, toPublicKey: this.keypair.publicKey, data: {
+                    //...transactionHistory[0].data?
+                    ...reading
+                }
+            });
+            console.log(appendedAsset);
+        } catch (e) {
+            console.log(e);
+        }
     }
 }
+
+let test = new OehuReadAndWrite({
+    network: "http://188.166.15.225:9984/api/v1/",
+    deviceId: "id:3b959424:devices:beda4fb7-c2f9-4cb3-a479-4c8038535c74",
+    phrase: "penalty shine inner milk early answer ceiling twin spot blush width brick",
+    appId: "3b959424",
+    appKey: "30c12a0e15343d705a7e7ccb6d75f1c0",
+    debug: true,
+    emulator: true
+});
