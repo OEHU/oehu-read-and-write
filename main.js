@@ -1,7 +1,8 @@
 const P1Reader = require('p1-reader');
 const BigchainOrm = require('bigchaindb-orm').default;
 const OrmObject = require('bigchaindb-orm/dist/node/ormobject').default;
-const Connection = require('bigchaindb-orm/dist/node/connection').default;
+// const Connection = require('bigchaindb-orm/dist/node/connection').default;
+const Connection = require('bigchaindb-driver/dist/node/connection').default;
 const BigchainDriver = require('bigchaindb-driver');
 const bip39 = require('bip39');
 const axios = require('axios');
@@ -17,9 +18,7 @@ class OehuReadAndWrite {
         this.debug = opts.debug;
         this.emulator = opts.emulator;
 
-        this.connection = 0;
-
-        this.transactionsApi = 'https://api.oehu.org/transactions?raw=true&deviceId=' + this.deviceId;
+        this.transactionsApi = 'https://api.oehu.org/transactions?raw=true&deviceId=' + this.deviceId; //add limit
 
         // bug in bigchainDriver: https://github.com/bigchaindb/js-bigchaindb-driver/issues/268. Needs to be looked
         // at later. ATM make a change to a node-modules file. See link above.
@@ -51,7 +50,7 @@ class OehuReadAndWrite {
             };
 
             console.log(reading);
-            let result = this.uploadToBigchain(reading);
+            let result = this.setupBigchainTransaction(reading);
             this.lastReading = Date.now();
         }
     }
@@ -60,21 +59,12 @@ class OehuReadAndWrite {
         console.log('Error while reading: ' + err);
     }
 
-    async uploadToBigchain(reading) {
-
+    async setupBigchainTransaction(reading) {
         //Create connection
         let connection = new Connection(this.network, {
             app_id: this.appId,
             app_key: this.appKey
         });
-
-        //Get 'CREATE' transaction
-        let assetCreateTransaction;
-        try {
-            assetCreateTransaction = await connection.listTransactions("f4afc17b6a9ff1ad12c52b5ca8737f4f06094e3b34ad4dee7e4f7f0ae6fa4b54", 'CREATE');
-        } catch (e) {
-            console.log(e);
-        }
 
         //Get latest transaction of asset
         let tx = await axios.get(this.transactionsApi)
@@ -88,6 +78,7 @@ class OehuReadAndWrite {
         //Create transfer transaction, sign and send to Bigchain
         this.createTransferTransaction(connection, tx, reading);
     }
+
     async createTransferTransaction(connection, tx, reading) {
         let newAssetTransaction;
         try {
@@ -102,6 +93,28 @@ class OehuReadAndWrite {
         } catch (e) {
             console.log(e);
         }
+        // Same result :(
+        // try {
+        //     const txTransfer = BigchainDriver.Transaction.makeTransferTransaction(
+        //         [{ 'tx': tx, 'output_index': 0 }],
+        //         [BigchainDriver.Transaction.makeOutput(BigchainDriver.Transaction.makeEd25519Condition(this.keypair.publicKey))],
+        //         this.merge_options(tx.metadata.metadata, reading),
+        //     );
+        //
+        //     const txTransferSigned = BigchainDriver.Transaction.signTransaction(txTransfer, this.keypair.privateKey);
+        //
+        //     console.log('____txTransferSigned_____');
+        //     console.log(txTransferSigned);
+        //     console.log('____/txTransferSigned_____');
+        //
+        //     console.log('Send it');
+        //     let promise = connection.postTransactionCommit(txTransferSigned)
+        //     .then((res) => console.log(res))
+        //     .catch((err) => console.log(err));
+        //
+        // } catch (error) {
+        //     return Promise.reject(error)
+        // }
     }
 
     merge_options(obj1, obj2) {
